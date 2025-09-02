@@ -3,7 +3,7 @@ package org.example;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class FileCabinet implements Cabinet {
     private final List<Folder> folders;
@@ -13,44 +13,60 @@ public class FileCabinet implements Cabinet {
         this.folders = (folders == null) ? new ArrayList<>() : List.copyOf(folders);
     }
 
-    public void traverseActionFolders(List<Folder> folders, Consumer<Folder> action) {
+    public boolean traverseActionFolders(List<Folder> folders, Predicate<Folder> predicate) {
+        if (folders == null) return false;
 
         for (Folder folder : folders) {
-            action.accept(folder);
+            if (predicate.test(folder)) {
+                return true;
+            }
             if (folder instanceof MultiFolder mf) {
-                traverseActionFolders(mf.getFolders(), action);
+                List<Folder> children = mf.getFolders() == null ? List.of() : mf.getFolders();
+                if (traverseActionFolders(children, predicate)) {
+                    return true;
                 }
             }
         }
-
+        return false;
+    }
 
     @Override
     public Optional<Folder> findFolderByName(String name) {
-        final Optional<Folder>[] result = new Optional[]{Optional.empty()};
-
+        if (name == null ) return Optional.empty();
+        final Folder[] hit = new Folder[1];
         traverseActionFolders(folders, folder -> {
-            if (result[0].isEmpty() && folder.getName().equals(name)) {
-                result[0] = Optional.of(folder);
+            if (name.equals(folder.getName())) {
+                hit[0] = folder;
+                return true;
             }
+            return false;
         });
-
-        return result[0];
+        return Optional.ofNullable(hit[0]);
     }
 
     @Override
     public List<Folder> findFoldersBySize(String size) {
+        if (size == null) return List.of();
+        String normalizedSize = size.trim();
+        if (normalizedSize.isEmpty()) return List.of();
         List<Folder> folderList = new ArrayList<>();
-        traverseActionFolders(folders, folder ->
-        { if (folder.getSize().equals(size)){
-            folderList.add(folder);
-        } });
-        return folderList; }
+        traverseActionFolders(folders, folder -> {
+            if (normalizedSize.equalsIgnoreCase(folder.getSize())) {
+                folderList.add(folder);
+            }
+            return false;
+        });
+        return folderList;
+    }
 
     @Override
     public int count() {
-        List<Folder> all = new ArrayList<>();
-        traverseActionFolders(folders, all::add);
-        return all.size();
+        final int[] result = {0};
+        traverseActionFolders(folders, _ -> {
+            result[0]++;
+            return false;
+        });
+        return result[0];
     }
 
 }
