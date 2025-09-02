@@ -31,7 +31,6 @@ public class Main {
     }
 
 
-
     private static FileCabinet getFileCabinet() {
         SimpleFolder simpleFolder1 = new SimpleFolder("first", "MEDIUM");
         SimpleFolder simpleFolder2 = new SimpleFolder("second", "LARGE");

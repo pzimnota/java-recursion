@@ -10,7 +10,7 @@ public class CompositeFolder implements MultiFolder {
     public CompositeFolder(String name, String size, List<Folder> folders) {
         this.name = name;
         this.size = size;
-        this.folders = folders;
+        this.folders = (folders == null) ? List.of() : List.copyOf(folders);
     }
 
     @Override

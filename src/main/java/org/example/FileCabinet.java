@@ -13,7 +13,7 @@ public class FileCabinet implements Cabinet {
         this.folders = (folders == null) ? new ArrayList<>() : List.copyOf(folders);
     }
 
-    public boolean traverseActionFolders(List<Folder> folders, Predicate<Folder> predicate) {
+    private boolean traverseActionFolders(List<Folder> folders, Predicate<Folder> predicate) {
         if (folders == null) return false;
 
         for (Folder folder : folders) {
@@ -32,7 +32,7 @@ public class FileCabinet implements Cabinet {
 
     @Override
     public Optional<Folder> findFolderByName(String name) {
-        if (name == null ) return Optional.empty();
+        if (name == null) return Optional.empty();
         final Folder[] hit = new Folder[1];
         traverseActionFolders(folders, folder -> {
             if (name.equals(folder.getName())) {
