@@ -3,6 +3,8 @@ package org.example;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
 public class FileCabinet implements Cabinet {
@@ -13,7 +15,7 @@ public class FileCabinet implements Cabinet {
         this.folders = (folders == null) ? new ArrayList<>() : List.copyOf(folders);
     }
 
-    private boolean traverseActionFolders(List<Folder> folders, Predicate<Folder> predicate) {
+    public boolean traverseActionFolders(List<Folder> folders, Predicate<Folder> predicate) {
         if (folders == null) return false;
 
         for (Folder folder : folders) {
@@ -32,16 +34,19 @@ public class FileCabinet implements Cabinet {
 
     @Override
     public Optional<Folder> findFolderByName(String name) {
-        if (name == null) return Optional.empty();
-        final Folder[] hit = new Folder[1];
+        if (name == null ) return Optional.empty();
+        String finalName = name.trim();
+        if(finalName.isEmpty()) return Optional.empty();
+
+        AtomicReference<Folder> found = new AtomicReference<>(null);
         traverseActionFolders(folders, folder -> {
-            if (name.equals(folder.getName())) {
-                hit[0] = folder;
+            if (finalName.equals(folder.getName())) {
+                found.set(folder);
                 return true;
             }
             return false;
         });
-        return Optional.ofNullable(hit[0]);
+        return Optional.ofNullable(found.get());
     }
 
     @Override
@@ -61,12 +66,12 @@ public class FileCabinet implements Cabinet {
 
     @Override
     public int count() {
-        final int[] result = {0};
+        AtomicInteger count = new AtomicInteger();
         traverseActionFolders(folders, _ -> {
-            result[0]++;
+            count.getAndIncrement();
             return false;
         });
-        return result[0];
+        return count.get();
     }
 
 }
