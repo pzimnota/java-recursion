@@ -10,7 +10,7 @@ public class Main {
         FileCabinet fileCabinet = getFileCabinet();
 
         Optional<Folder> foundFolder = fileCabinet.findFolderByName("third");
-        foundFolder.ifPresent(folder -> System.out.println("Found folder: " + folder.getName()));
+        foundFolder.ifPresent(folder -> System.out.println("Found folder: " + folder.name()));
         System.out.println("Present? " + fileCabinet.findFolderByName("missing").isPresent());
 
         List<Folder> smallFolders = fileCabinet.findFoldersBySize("SMALL       ");

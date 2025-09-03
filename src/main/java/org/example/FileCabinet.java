@@ -7,10 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
-public class FileCabinet implements Cabinet {
-    private final List<Folder> folders;
-
-
+public record FileCabinet(List<Folder> folders) implements Cabinet {
     public FileCabinet(List<Folder> folders) {
         this.folders = (folders == null) ? new ArrayList<>() : List.copyOf(folders);
     }
@@ -23,7 +20,7 @@ public class FileCabinet implements Cabinet {
                 return true;
             }
             if (folder instanceof MultiFolder mf) {
-                List<Folder> children = mf.getFolders() == null ? List.of() : mf.getFolders();
+                List<Folder> children = mf.folders() == null ? List.of() : mf.folders();
                 if (traverseActionFolders(children, predicate)) {
                     return true;
                 }
@@ -34,13 +31,13 @@ public class FileCabinet implements Cabinet {
 
     @Override
     public Optional<Folder> findFolderByName(String name) {
-        if (name == null ) return Optional.empty();
+        if (name == null) return Optional.empty();
         String finalName = name.trim();
-        if(finalName.isEmpty()) return Optional.empty();
+        if (finalName.isEmpty()) return Optional.empty();
 
         AtomicReference<Folder> found = new AtomicReference<>(null);
         traverseActionFolders(folders, folder -> {
-            if (finalName.equals(folder.getName())) {
+            if (finalName.equals(folder.name())) {
                 found.set(folder);
                 return true;
             }
@@ -56,7 +53,7 @@ public class FileCabinet implements Cabinet {
         if (normalizedSize.isEmpty()) return List.of();
         List<Folder> folderList = new ArrayList<>();
         traverseActionFolders(folders, folder -> {
-            if (normalizedSize.equalsIgnoreCase(folder.getSize())) {
+            if (normalizedSize.equalsIgnoreCase(folder.size())) {
                 folderList.add(folder);
             }
             return false;
