@@ -7,12 +7,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
-public record FileCabinet(List<Folder> folders) implements Cabinet {
+public class FileCabinet implements Cabinet {
+    private final List<Folder> folders;
+
     public FileCabinet(List<Folder> folders) {
-        this.folders = (folders == null) ? new ArrayList<>() : List.copyOf(folders);
+        this.folders = (folders == null) ? List.of() : List.copyOf(folders);
     }
 
-    public boolean traverseActionFolders(List<Folder> folders, Predicate<Folder> predicate) {
+    private boolean traverseActionFolders(List<Folder> folders, Predicate<Folder> predicate) {
         if (folders == null) return false;
 
         for (Folder folder : folders) {
@@ -20,7 +22,7 @@ public record FileCabinet(List<Folder> folders) implements Cabinet {
                 return true;
             }
             if (folder instanceof MultiFolder mf) {
-                List<Folder> children = mf.folders() == null ? List.of() : mf.folders();
+                List<Folder> children = mf.getFolders() == null ? List.of() : mf.getFolders();
                 if (traverseActionFolders(children, predicate)) {
                     return true;
                 }
@@ -32,12 +34,12 @@ public record FileCabinet(List<Folder> folders) implements Cabinet {
     @Override
     public Optional<Folder> findFolderByName(String name) {
         if (name == null) return Optional.empty();
-        String finalName = name.trim();
-        if (finalName.isEmpty()) return Optional.empty();
+        String normalizedName = name.trim();
+        if (normalizedName.isEmpty()) return Optional.empty();
 
         AtomicReference<Folder> found = new AtomicReference<>(null);
         traverseActionFolders(folders, folder -> {
-            if (finalName.equals(folder.name())) {
+            if (normalizedName.equals(folder.getName())) {
                 found.set(folder);
                 return true;
             }
@@ -53,7 +55,7 @@ public record FileCabinet(List<Folder> folders) implements Cabinet {
         if (normalizedSize.isEmpty()) return List.of();
         List<Folder> folderList = new ArrayList<>();
         traverseActionFolders(folders, folder -> {
-            if (normalizedSize.equalsIgnoreCase(folder.size())) {
+            if (normalizedSize.equalsIgnoreCase(folder.getSize())) {
                 folderList.add(folder);
             }
             return false;

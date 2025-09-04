@@ -1,4 +1,4 @@
 package org.example;
 
-public record SimpleFolder(String name, String size) implements Folder {
+public record SimpleFolder(String getName, String getSize) implements Folder {
 }

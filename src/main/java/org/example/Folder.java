@@ -1,7 +1,7 @@
 package org.example;
 
 public interface Folder {
-    String name();
+    String getName();
 
-    String size();
+    String getSize();
 }
